@@ -1,4 +1,4 @@
-import { Editor, Transforms } from 'slate'
+import { Editor, Selection, Transforms } from 'slate'
 import { Descriptor, RichTextDescriptor, TableFormFieldsDescriptor, Types } from './descriptors'
 import { BuilderEditMode } from '../state/modules/builder-edit-mode'
 import { BoxModel } from '../state/modules/box-models'
@@ -22,6 +22,7 @@ import {
   StyleControlMessage,
 } from '../controls'
 import { ReactEditor } from 'slate-react'
+import deepEqual from '../utils/deepEqual'
 
 export const RichTextPropControllerMessageType = {
   CHANGE_BUILDER_EDIT_MODE: 'CHANGE_BUILDER_EDIT_MODE',
@@ -136,11 +137,27 @@ class RichTextPropController extends PropController<RichTextPropControllerMessag
     const _onChange = editor.onChange
     this.editor.onChange = options => {
       _onChange(options)
+      console.log('host - onChange prop controller', options)
 
       // if onChange is local then it will include an operation(s)
       // that is the only case in which we want to push updates
       // this prevent infinite loops that can occur when collaborating
       if (options?.operation != null) {
+        // if (
+        //   options.operation.type === 'set_selection' &&
+        //   deepEqual(options.operation.newProperties, {
+        //     focus: {
+        //       offset: 0,
+        //       path: [0, 0],
+        //     },
+        //     anchor: {
+        //       offset: 0,
+        //       path: [0, 0],
+        //     },
+        //   })
+        // ) {
+        //   return
+        // }
         this.send({
           type: RichTextPropControllerMessageType.CHANGE_EDITOR_VALUE,
           value: richTextDAOToDTO(editor.children, editor.selection),

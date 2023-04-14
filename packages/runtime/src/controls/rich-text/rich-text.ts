@@ -104,6 +104,7 @@ export class RichTextControl extends PropController<RichTextControlMessage> {
     const _onChange = editor.onChange
     this.editor.onChange = options => {
       _onChange(options)
+      console.log('host - onChange control', options)
 
       // if onChange is local then it will include an operation(s)
       // that is the only case in which we want to push updates
