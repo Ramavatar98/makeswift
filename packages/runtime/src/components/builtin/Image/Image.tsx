@@ -10,7 +10,7 @@ import {
   TextInputValue,
   WidthValue,
 } from '../../../prop-controllers/descriptors'
-import { DEVICES, findDeviceOverride } from '../../utils/devices'
+import { Breakpoints, findBreakpointOverride } from '../../../state/modules/breakpoints'
 import { placeholders } from '../../utils/placeholders'
 import { Link } from '../../shared/Link'
 import { cx } from '@emotion/css'
@@ -18,6 +18,8 @@ import { useStyle } from '../../../runtimes/react/use-style'
 import { useResponsiveStyle, useResponsiveWidth } from '../../utils/responsive-style'
 import { useFile } from '../../../runtimes/react/hooks/makeswift-api'
 import { major as nextMajorVersion } from '../../../next/next-version'
+import { useBreakpoints } from '../../../runtimes/react'
+import { DropFirst } from '../../utils/drop-first'
 
 const NextLegacyImage = NextImage as typeof NextLegacyImageType
 
@@ -47,21 +49,31 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   })
 }
 
-function imageSizes(width?: Props['width']): string {
-  const baseDevice = DEVICES.find(device => device.maxWidth == null)
-  const baseWidth = baseDevice && width && findDeviceOverride(width, baseDevice.id)
+function imageSizes(breakpoints: Breakpoints, width?: Props['width']): string {
+  const baseDevice = breakpoints.find(breakpoint => breakpoint.maxWidth == null)
+  const baseWidth = baseDevice && width && findBreakpointOverride(breakpoints, width, baseDevice.id)
   const baseWidthSize =
     baseWidth == null || baseWidth.value.unit !== 'px' ? '100vw' : `${baseWidth.value.value}px`
 
-  return DEVICES.map(device => {
-    const override = findDeviceOverride(width, device.id)
+  return breakpoints
+    .map(breakpoint => {
+      const override = findBreakpointOverride(breakpoints, width, breakpoint.id)
 
-    if (override == null || device.maxWidth == null || override.value.unit !== 'px') return null
+      if (override == null || breakpoint.maxWidth == null || override.value.unit !== 'px') {
+        return null
+      }
 
-    return `(max-width: ${device.maxWidth}px) ${Math.min(device.maxWidth, override.value.value)}px`
-  })
+      return `(max-width: ${breakpoint.maxWidth}px) ${Math.min(
+        breakpoint.maxWidth,
+        override.value.value,
+      )}px`
+    })
     .filter((size): size is NonNullable<typeof size> => size != null)
     .reduce((sourceSizes, sourceSize) => `${sourceSize}, ${sourceSizes}`, baseWidthSize)
+}
+
+function useImageSizes(...args: DropFirst<Parameters<typeof imageSizes>>) {
+  return imageSizes(useBreakpoints(), ...args)
 }
 
 type Dimensions = {
@@ -132,7 +144,7 @@ const ImageComponent = forwardRef(function Image(
         <NextLegacyImage
           layout="responsive"
           src={imageSrc}
-          sizes={imageSizes(width)}
+          sizes={useImageSizes(width)}
           alt={altText}
           width={dimensions.width}
           height={dimensions.height}
@@ -140,7 +152,7 @@ const ImageComponent = forwardRef(function Image(
       ) : (
         <NextImage
           src={imageSrc}
-          sizes={imageSizes(width)}
+          sizes={useImageSizes(width)}
           alt={altText ?? ''}
           width={dimensions.width}
           height={dimensions.height}
