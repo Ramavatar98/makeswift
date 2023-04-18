@@ -1,12 +1,16 @@
 import { memo, useMemo } from 'react'
 
-import { RuntimeProvider } from '../runtimes/react'
+import { RuntimeProvider, ReactRuntime } from '../runtimes/react'
 import { Page as PageMeta } from '../components/page'
 import { MakeswiftClient } from '../api/react'
 import { MakeswiftPageSnapshot } from './client'
 
 export type PageProps = {
   snapshot: MakeswiftPageSnapshot
+  // TODO: Right now we don't need to pass the runtime to the Page component,
+  // because we're using storeContextDefaultValue when creating the runtime. But we want to remove
+  // that and create the store when creating the runtime. Then we will use that store on the StoreContext.Provider.
+  runtime?: ReactRuntime
 }
 import {
   GetServerSidePropsContext,

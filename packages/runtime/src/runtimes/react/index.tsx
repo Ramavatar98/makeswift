@@ -56,35 +56,49 @@ export interface ReactRuntime {
   getBreakpoints(): Breakpoints
 }
 
-function createReactRuntime(store: ReactPage.Store): ReactRuntime {
-  return {
-    registerComponent(component, { type, label, icon = 'Cube40', hidden = false, props }) {
-      const unregisterComponent = store.dispatch(
-        registerComponentEffect(type, { label, icon, hidden }, props ?? {}),
-      )
+export class ReactRuntime {
+  static registerComponent<
+    P extends Record<string, PropControllerDescriptor>,
+    C extends ReactPage.ComponentType<{ [K in keyof P]: PropControllerDescriptorValueType<P[K]> }>,
+  >(
+    component: C,
+    {
+      type,
+      label,
+      icon = 'Cube40',
+      hidden = false,
+      props,
+    }: { type: string; label: string; icon?: ComponentIcon; hidden?: boolean; props?: P },
+  ): () => void {
+    // TODO: We're using storeContextDefaultValue here to be backward compatible.
+    // In the future we might want to create a new store, and then pass the store to StoreContext.Provider instead.
+    const unregisterComponent = storeContextDefaultValue.dispatch(
+      registerComponentEffect(type, { label, icon, hidden }, props ?? {}),
+    )
 
-      const unregisterReactComponent = store.dispatch(
-        registerReactComponentEffect(type, component as unknown as ReactPage.ComponentType),
-      )
+    const unregisterReactComponent = storeContextDefaultValue.dispatch(
+      registerReactComponentEffect(type, component as unknown as ReactPage.ComponentType),
+    )
 
-      return () => {
-        unregisterComponent()
-        unregisterReactComponent()
-      }
-    },
-    copyElementTree(
-      elementTree: ReactPage.ElementData,
-      replacementContext: ReactPage.SerializableReplacementContext,
-    ) {
-      return ReactPage.copyElementTree(store.getState(), elementTree, replacementContext)
-    },
-    getBreakpoints() {
-      return ReactPage.getBreakpoints(store.getState())
-    },
+    return () => {
+      unregisterComponent()
+      unregisterReactComponent()
+    }
+  }
+  static copyElementTree(
+    elementTree: ReactPage.ElementData,
+    replacementContext: ReactPage.SerializableReplacementContext,
+  ): ReactPage.Element {
+    return ReactPage.copyElementTree(
+      storeContextDefaultValue.getState(),
+      elementTree,
+      replacementContext,
+    )
+  }
+  static getBreakpoints(): Breakpoints {
+    return ReactPage.getBreakpoints(storeContextDefaultValue.getState())
   }
 }
-
-export const ReactRuntime = createReactRuntime(storeContextDefaultValue)
 
 registerBuiltinComponents(ReactRuntime)
 
