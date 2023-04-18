@@ -23,6 +23,7 @@ import {
   registerComponentEffect,
   registerComponentHandleEffect,
   registerReactComponentEffect,
+  setBreakpoints,
 } from '../../state/actions'
 import type {
   PropControllerDescriptor,
@@ -37,7 +38,11 @@ import { FindDomNode } from './find-dom-node'
 import { useGlobalElement } from './hooks/makeswift-api'
 import { ElementImperativeHandle } from './element-imperative-handle'
 import { BuilderEditMode } from '../../state/modules/builder-edit-mode'
-import { Breakpoints } from '../../state/modules/breakpoints'
+import {
+  Breakpoints,
+  BreakpointsInput,
+  parseBreakpointsInput,
+} from '../../state/modules/breakpoints'
 
 export const storeContextDefaultValue = ReactPage.configureStore()
 
@@ -97,6 +102,12 @@ export class ReactRuntime {
   }
   static getBreakpoints(): Breakpoints {
     return ReactPage.getBreakpoints(storeContextDefaultValue.getState())
+  }
+
+  constructor({ unstable_breakpoints }: { unstable_breakpoints?: BreakpointsInput } = {}) {
+    if (unstable_breakpoints) {
+      storeContextDefaultValue.dispatch(setBreakpoints(parseBreakpointsInput(unstable_breakpoints)))
+    }
   }
 }
 
