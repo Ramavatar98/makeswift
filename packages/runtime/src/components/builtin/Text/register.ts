@@ -6,7 +6,7 @@ import { forwardNextDynamicRef } from '../../../next'
 import { Props } from '../../../prop-controllers'
 import { ReactRuntime } from '../../../runtimes/react'
 import { MakeswiftComponentType } from '../constants'
-import { getBaseBreakpoint } from '../../../state/modules/breakpoints'
+import { DEFAULT_BREAKPOINT_ID_MOBILE, getBaseBreakpoint } from '../../../state/modules/breakpoints'
 
 export function registerComponent(runtime: ReactRuntime) {
   return runtime.registerComponent(
@@ -37,7 +37,8 @@ export function registerComponent(runtime: ReactRuntime) {
                               id: null,
                               style: [
                                 {
-                                  deviceId: 'mobile',
+                                  // TODO: This will only work if they have the mobile breakpoint.
+                                  deviceId: DEFAULT_BREAKPOINT_ID_MOBILE,
                                   value: { fontSize: { value: 16, unit: 'px' } },
                                 },
                                 {
