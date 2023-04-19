@@ -54,7 +54,7 @@ export function isDeviceOverride(value: {
   deviceId: string
   value: RichTextTypographyValue
 }): value is DeviceOverride<RichTextTypographyValue> {
-  return value.deviceId === 'desktop' || value.deviceId === 'tablet' || value.deviceId === 'mobile'
+  return value.deviceId != null
 }
 
 export function getTypographyStyleSwatchIds(
