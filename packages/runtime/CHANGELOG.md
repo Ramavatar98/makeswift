@@ -1,5 +1,11 @@
 # @makeswift/runtime
 
+## 0.8.3
+
+### Patch Changes
+
+- dd5f7b6: Fix path normalization for client-side navigation.
+
 ## 0.8.2
 
 ### Patch Changes
